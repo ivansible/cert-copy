@@ -1,4 +1,8 @@
 ---
 # defaults file for ivansible.letsencrypt_copy
 
+certbot_update_script: /usr/local/sbin/certbot-update.sh
+
+# the following setting must match the letsencrypt_master and letsencrypt_cloudflare roles
+certbot_group: ssl-cert
 ...

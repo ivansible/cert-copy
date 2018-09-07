@@ -1,5 +1,0 @@
----
-- name: ivansible.letsencrypt_copy root action 1
-  debug:
-    msg: action 1
-...

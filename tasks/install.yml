@@ -1,0 +1,67 @@
+---
+- name: add certbot ppa repository
+  apt_repository:
+    repo: ppa:certbot/certbot
+    # if lsb_release executable is not installed on target,
+    # the python aptsource module defaults to the codename "sid"
+    # and fails. as a workaround, set codename here explicitly.
+    codename: "{{ ansible_lsb.codename }}"
+    filename: certbot
+    mode: 0644
+    update_cache: yes
+
+- name: install certbot package
+  apt:
+    name:
+      - certbot      # creates /etc/letsecnrypt
+      - ssl-cert     # for ssl-cert unix group
+    install_recommends: no
+  register: install_certbot_result
+
+- name: run certbot once to create directory structure in /etc
+  command: certbot -n --dry-run certonly
+  ignore_errors: yes
+  become: yes
+  when: install_certbot_result is changed
+
+- name: create unix group for letsencrypt certificate access
+  group:
+    name: "{{ certbot_group }}"
+    state: present
+  notify:
+    - run certbot update script once
+
+- name: disable certbot certificate renewal service
+  systemd:
+    name: certbot.timer
+    state: stopped
+    enabled: no
+    daemon_reload: yes
+
+- name: create directory for log file
+  file:
+    path: /var/log/letsencrypt
+    state: directory
+    owner: root
+    mode: 0700
+
+- name: create directory for hooks
+  file:
+    path: /etc/letsencrypt/renewal-hooks/{{ item }}
+    state: directory
+    owner: root
+    mode: 0755
+  loop:
+    - pre
+    - post
+    - deploy
+
+- name: create manual update script
+  template:
+    src: certbot-update.sh
+    dest: "{{ certbot_update_script }}"
+    owner: root
+    mode: 0700
+  notify:
+    - run certbot update script once
+...

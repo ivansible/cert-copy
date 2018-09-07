@@ -3,8 +3,51 @@
 - setup:
   become: no
 
-# use import to become root globally
-- name: become root
-  import_tasks: root.yml
+- assert:
+    that: certbot_master_host is defined
+    msg: "you must define certbot_master_host for this role"
+
+
+- name: install certbot and create manual update script
+  import_tasks: install.yml
   become: yes
+  tags: le_copy_install
+
+
+- name: archive certbot certificates from master to controller
+  # note: it's important to import_tasks (vs include_tasks), since
+  #       we later use the le_controller_archive_path variable,
+  #       which is registered inside the imported run_once block!
+  import_tasks: download.yml
+  tags: le_copy_download
+  run_once: yes
+
+
+- name: upload certbot certificates from controller to slave
+  unarchive:
+    src: "{{ le_controller_archive.path }}"
+    dest: /etc/letsencrypt
+  become: yes
+  tags: le_copy_upload
+
+- name: fix permissions of certificate directories and private keys
+  # xargs -r == --no-run-if-empty
+  shell: >-
+    chown root:{{ certbot_group }} {archive,live} &&
+    chmod 0750 {archive,live} &&
+    find {archive,live} -name privkey*.pem | xargs -r chown root:{{ certbot_group }} &&
+    find {archive,live} -name privkey*.pem | xargs -r chmod o=
+  args:
+    chdir: /etc/letsencrypt
+    executable: /bin/bash  # {file1,dir2} is bash-only syntax
+  become: yes
+  notify:
+    - run certbot update script once
+  tags:
+    - le_copy_upload
+    - le_copy_permissions
+
+
+- name: remove temporary archives and run certbot update script
+  meta: flush_handlers
 ...

@@ -1,0 +1,35 @@
+---
+- name: allocate transient certbot archive on master
+  tempfile:
+    state: file
+    prefix: ansible.letsencrypt.certs.
+    suffix: .tar.gz
+  delegate_to: "{{ certbot_master_host }}"
+  register: le_master_archive
+  notify: remove temporary certbot archive on master
+
+- name: allocate transient certbot archive on controller
+  tempfile:
+    state: file
+    prefix: ansible.certbot-certs.
+    suffix: .tar.gz
+  connection: local
+  register: le_controller_archive
+  notify: remove temporary certbot archive on controller
+
+- name: fill temporary certbot archive on master with certificates
+  archive:
+    path:
+      - /etc/letsencrypt/archive
+      - /etc/letsencrypt/live
+    dest: "{{ le_master_archive.path }}"
+  delegate_to: "{{ certbot_master_host }}"
+  become: yes
+
+- name: download archived certificates from master to controller
+  fetch:
+    src: "{{ le_master_archive.path }}"
+    dest: "{{ le_controller_archive.path }}"
+    flat: yes
+  delegate_to: "{{ certbot_master_host }}"
+...
