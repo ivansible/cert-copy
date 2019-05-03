@@ -1,8 +1,8 @@
-# ivansible.letsencrypt_copy
+# ivansible.cert_copy
 
 Sometimes development requires a production SSL certificate but deploying
-letsencrypt [master](https://github.com/ivansible/letsencrypt-master)
-or [replica](https://github.com/ivansible/letsencrypt-replica) role
+letsencrypt [master](https://github.com/ivansible/cert-master)
+or [replica](https://github.com/ivansible/cert-replica) role
 is not an option.
 
 This role manually copies letsencrypt certificates from certbot master host
@@ -55,7 +55,7 @@ None
 
     - hosts: development-boxes
       roles:
-         - role: letsencrypt_copy
+         - role: cert_copy
            certbot_master_host: zeus
 
 

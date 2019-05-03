@@ -1,5 +1,5 @@
 ---
-# handlers file for ivansible.letsencrypt_copy
+# handlers for ivansible.cert_copy
 
 - name: remove temporary certbot archive on master
   file:
