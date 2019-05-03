@@ -1,11 +1,13 @@
 ---
-# perform setup as a non-root user
-- setup:
+- name: refresh facts as non-root
+  setup:
   become: no
 
-- assert:
+- name: certbot_master_host must be defined
+  assert:
     that: certbot_master_host is defined
     msg: "you must define certbot_master_host for this role"
+    quiet: yes
 
 
 - name: install certbot and create manual update script
@@ -33,13 +35,15 @@
 - name: fix permissions of certificate directories and private keys
   # xargs -r == --no-run-if-empty
   shell: >-
+    set -eo pipefail &&
     chown root:{{ certbot_group }} {archive,live} &&
     chmod 0750 {archive,live} &&
     find {archive,live} -name privkey*.pem | xargs -r chown root:{{ certbot_group }} &&
     find {archive,live} -name privkey*.pem | xargs -r chmod o=
   args:
     chdir: /etc/letsencrypt
-    executable: /bin/bash  # {file1,dir2} is bash-only syntax
+    # "{file1,dir2}" and "pipefail" is bash-only syntax
+    executable: /bin/bash
   become: yes
   notify:
     - run certbot update script once
