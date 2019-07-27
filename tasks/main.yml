@@ -5,6 +5,9 @@
     msg: "you must define certbot_master_host for this role"
     quiet: yes
 
+- name: display certbot_master_host
+  debug:
+    var: certbot_master_host
 
 - name: install certbot and create manual update script
   import_tasks: install.yml
