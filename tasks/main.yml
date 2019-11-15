@@ -29,6 +29,7 @@
     src: "{{ le_controller_archive.path }}"
     dest: /etc/letsencrypt
   become: yes
+  register: certbot_unarchive_result
   tags: le_copy_upload
 
 - name: fix permissions of certificate directories and private keys
@@ -44,6 +45,7 @@
     # "{file1,dir2}" and "pipefail" is bash-only syntax
     executable: /bin/bash
   become: yes
+  when: certbot_unarchive_result is changed
   notify:
     - run certbot update script once
   tags:
