@@ -1,8 +1,4 @@
 ---
-- name: refresh facts as non-root
-  setup:
-  become: no
-
 - name: certbot_master_host must be defined
   assert:
     that: certbot_master_host is defined
