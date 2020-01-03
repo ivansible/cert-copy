@@ -39,11 +39,12 @@ This group should be the same as on the master host.
 
 ## Tags
 
-- `le_copy_install` -- install certbot and create manual update script
-- `le_copy_download` -- archive certbot certificates from master
-                        (this step is performed once for all slaves)
-- `le_copy_upload` -- upload archived certificates to slaves
-- `le_copy_permissions` -- fix group permissions of certificate files
+- `cert_copy_install` -- install certbot and create manual update script
+- `cert_copy_download` -- archive certbot certificates from master
+                          (this step is performed once on every slave)
+- `cert_copy_upload` -- upload archived certificates to slaves
+- `cert_copy_permissions` -- fix group permissions of certificate files
+- `cert_copy_all` -- all tasks
 
 
 ## Dependencies
@@ -55,7 +56,7 @@ None
 
     - hosts: development-boxes
       roles:
-         - role: cert_copy
+         - role: ivansible.cert_copy
            certbot_master_host: zeus
 
 
@@ -65,4 +66,4 @@ MIT
 
 ## Author Information
 
-Created in 2018 by [IvanSible](https://github.com/ivansible)
+Created in 2018-2020 by [IvanSible](https://github.com/ivansible)

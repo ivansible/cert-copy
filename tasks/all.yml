@@ -1,0 +1,58 @@
+---
+- name: certbot_master_host must be defined
+  assert:
+    that: certbot_master_host is defined
+    msg: "you must define certbot_master_host for this role"
+    quiet: true
+
+- name: display certbot_master_host
+  debug:
+    var: certbot_master_host
+
+- name: install certbot and create manual update script
+  import_tasks: install.yml
+  become: true
+  tags: cert_copy_install
+
+
+- name: archive certbot certificates from master to controller
+  # note: it's important to import_tasks (vs include_tasks), since
+  #       we later use the _cert_controller_archive.path variable,
+  #       which is registered inside the imported run_once block!
+  import_tasks: download.yml
+  run_once: true
+  tags: cert_copy_download
+
+
+- name: upload certbot certificates from controller to slave
+  unarchive:
+    src: "{{ _cert_controller_archive.path }}"
+    dest: /etc/letsencrypt
+  become: true
+  register: certbot_unarchive_result
+  tags: cert_copy_upload
+
+- name: fix permissions of certificate directories and private keys
+  # xargs -r == --no-run-if-empty
+  shell: >-
+    set -eo pipefail &&
+    chown root:{{ certbot_group }} {archive,live} &&
+    chmod 0750 {archive,live} &&
+    find {archive,live} -name privkey*.pem | xargs -r chown root:{{ certbot_group }} &&
+    find {archive,live} -name privkey*.pem | xargs -r chmod o=
+  args:
+    chdir: /etc/letsencrypt
+    # "{file1,dir2}" and "pipefail" is bash-only syntax
+    executable: /bin/bash
+  become: true
+  when: certbot_unarchive_result is changed
+  notify:
+    - run certbot update script once
+  tags:
+    - cert_copy_upload
+    - cert_copy_permissions
+
+
+- name: remove temporary archives and run certbot update script
+  meta: flush_handlers
+...

@@ -1,10 +1,11 @@
 ---
-dependencies: []
+dependencies:
+  - ivansible.lin_base  # for hide_secrets
 
 galaxy_info:
   role_name: cert_copy
   author: "Ivan Andreev"
-  description: "setup local certbot with copy of master certificates"
+  description: "setup local certbot with copy of certificates from master"
   company: "IvanSible"
   license: MIT
   min_ansible_version: 2.8
