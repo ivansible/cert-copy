@@ -9,6 +9,7 @@
     filename: certbot
     mode: 0644
     update_cache: true
+  when: ansible_lsb.release is version('20.04','<')
 
 - name: install certbot package
   apt:
