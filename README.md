@@ -49,7 +49,8 @@ This group should be the same as on the master host.
 
 ## Dependencies
 
-None
+- `ivansible.lin_base`  - for hide_secrets
+- `ivansible.cert_base` - for common certbot settings and tasks
 
 
 ## Example Playbook
@@ -66,4 +67,4 @@ MIT
 
 ## Author Information
 
-Created in 2018-2020 by [IvanSible](https://github.com/ivansible)
+Created in 2018-2021 by [IvanSible](https://github.com/ivansible)

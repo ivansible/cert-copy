@@ -1,6 +1,7 @@
 ---
 dependencies:
-  - ivansible.lin_base  # for hide_secrets
+  - ivansible.lin_base   # for hide_secrets
+  - ivansible.cert_base  # for common certbot settings and tasks
 
 galaxy_info:
   role_name: cert_copy

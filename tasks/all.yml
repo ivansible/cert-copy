@@ -9,8 +9,23 @@
   debug:
     var: certbot_master_host
 
-- name: install certbot and create manual update script
-  import_tasks: install.yml
+
+- name: install certbot
+  import_role:
+    name: ivansible.cert_base
+    tasks_from: install.yml
+  vars:
+    certbot_stop_timer: true
+  become: true
+  tags: cert_copy_install
+
+- name: create manual update script
+  template:
+    src: certbot-update.sh
+    dest: "{{ certbot_update_script }}"
+    mode: 0700
+  notify:
+    - run certbot update script once
   become: true
   tags: cert_copy_install
 
@@ -27,7 +42,7 @@
 - name: upload certbot certificates from controller to slave
   unarchive:
     src: "{{ _cert_controller_archive.path }}"
-    dest: /etc/letsencrypt
+    dest: "{{ certbot_dir }}"
   become: true
   register: certbot_unarchive_result
   tags: cert_copy_upload
@@ -36,12 +51,12 @@
   # xargs -r == --no-run-if-empty
   shell: >-
     set -eo pipefail &&
-    chown root:{{ certbot_group }} {archive,live} &&
+    chown "root:{{ certbot_group }}" {archive,live} &&
     chmod 0750 {archive,live} &&
-    find {archive,live} -name privkey*.pem | xargs -r chown root:{{ certbot_group }} &&
-    find {archive,live} -name privkey*.pem | xargs -r chmod o=
+    find {archive,live} -name "privkey*.pem" | xargs -r chown "root:{{ certbot_group }}" &&
+    find {archive,live} -name "privkey*.pem" | xargs -r chmod o=
   args:
-    chdir: /etc/letsencrypt
+    chdir: "{{ certbot_dir }}"
     # "{file1,dir2}" and "pipefail" is bash-only syntax
     executable: /bin/bash
   become: true

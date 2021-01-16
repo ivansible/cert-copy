@@ -20,9 +20,10 @@
 - name: fill temporary certbot archive on master with certificates
   archive:
     path:
-      - /etc/letsencrypt/archive
-      - /etc/letsencrypt/live
+      - "{{ certbot_live_dir }}"
+      - "{{ certbot_arch_dir }}"
     dest: "{{ _cert_master_archive.path }}"
+    mode: 0644
   delegate_to: "{{ certbot_master_host }}"
   become: true
 
